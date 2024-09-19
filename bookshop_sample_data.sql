@@ -157,3 +157,52 @@ insert into Books(GenreId,Title,Price,AuthorId) SELECT (select id from Genres wh
 insert into Books(GenreId,Title,Price,AuthorId) SELECT (select id from Genres where Name='Drama'),'Romeo and Juliet',(40+CAST(RAND() * 100 AS INT)),(select id from Authors where Name='William Shakespeare')
 insert into Books(GenreId,Title,Price,AuthorId) SELECT (select id from Genres where Name='Drama'),'Othello',(40+CAST(RAND() * 100 AS INT)),(select id from Authors where Name='William Shakespeare')
 insert into Books(GenreId,Title,Price,AuthorId) SELECT (select id from Genres where Name='Drama'),'Life of Pi',(40+CAST(RAND() * 100 AS INT)),(select id from Authors where Name='Yann Martel')
+
+
+--- Create and populate Readers
+DROP TABLE IF EXISTS [Readers]
+
+CREATE TABLE [Readers](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](80) NOT NULL,
+	CONSTRAINT [PK_Reader] PRIMARY KEY CLUSTERED ([Id] ASC),
+	CONSTRAINT [AK_Reader] UNIQUE NONCLUSTERED ([Name] ASC)
+)
+
+TRUNCATE TABLE [Readers]
+
+INSERT INTO [Readers]([name]) 
+SELECT k.v FROM (VALUES
+		('John Smith'),('Louise Cantu'),('Anakin Randall'),('Christina Clarke'),('Stetson Shaw'),
+		('Emersyn Cook'),('Ezekiel Perry'),('Clara Delarosa'),('Osiris Hanna'),('Cynthia Lowe'),
+		('Julius Raymond'),('Hadlee Frederick'),('Kase Adkins'),('Emelia Lozano'),('Boone Davis'),
+		('Mia Montgomery'),('Maximiliano Wiley'),('Lauryn Morse'),('Bode West'),('Remi Galindo'),
+		('Salvatore Schneider'),('Alice Soyun')) K(V)
+
+--- Create and populate book
+DROP TABLE IF EXISTS [Loans]
+
+CREATE TABLE [Loans](
+	[Book] [int] NOT NULL,
+	[Reader] [int] NOT NULL,
+	[Borrowed] [date] NOT NULL,
+	[Returned] [date] NULL,
+	CONSTRAINT [PK_Loans] PRIMARY KEY CLUSTERED ([Book],[Reader],[Borrowed] DESC)
+)
+
+CREATE NONCLUSTERED INDEX [IDX_LOAD_READER] ON [dbo].[Loans]
+(
+	[Reader] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+
+
+TRUNCATE TABLE [Loans]
+
+INSERT INTO [Loans]([Book],[Reader],[Borrowed],[Returned]) 
+SELECT a1,a2,a3,a4 FROM (VALUES
+		(1,2,'2022-10-01','2022-10-03'),
+		(2,2,'2022-10-03',NULL),
+		(3,2,'2022-10-04','2022-10-07'),
+		(3,5,'2022-10-08','2022-10-10'),
+		(3,3,'2022-10-12',NULL)
+) K(a1,a2,a3,a4)
